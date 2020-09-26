@@ -32,7 +32,7 @@
 static volatile bool force_quit;
 
 static uint16_t port_id;
-static uint16_t nr_queues = 5;
+static uint16_t nr_queues = 1;
 static uint8_t selected_queue = 1;
 struct rte_mempool *mbuf_pool;
 struct rte_flow *flow;
@@ -64,8 +64,7 @@ main_loop(void)
 
 	while (!force_quit) {
 		for (i = 0; i < nr_queues; i++) {
-			nb_rx = rte_eth_rx_burst(port_id,
-						i, mbufs, 32);
+			nb_rx = rte_eth_rx_burst(port_id, i, mbufs, 32);
 			if (nb_rx) {
 				for (j = 0; j < nb_rx; j++) {
 					struct rte_mbuf *m = mbufs[j];
