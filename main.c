@@ -38,7 +38,7 @@ struct rte_mempool *mbuf_pool;
 struct rte_flow *flow;
 
 #define SRC_IP ((0<<24) + (0<<16) + (0<<8) + 0) /* src ip = 0.0.0.0 */
-#define DEST_IP ((192<<24) + (168<<16) + (1<<8) + 1) /* dest ip = 192.168.1.1 */
+#define DEST_IP ((0<<24) + (0<<16) + (0<<8) + 0) /* dest ip = 0.0.0.0 */
 #define FULL_MASK 0xffffffff /* full mask */
 #define EMPTY_MASK 0x0 /* empty mask */
 
@@ -246,7 +246,7 @@ main(int argc, char **argv)
 	/* create flow for send packet with */
 	flow = generate_ipv4_flow(port_id, selected_queue,
 				SRC_IP, EMPTY_MASK,
-				DEST_IP, FULL_MASK, &error);
+				DEST_IP, EMPTY_MASK, &error);
 	if (!flow) {
 		printf("Flow can't be created %d message: %s\n",
 			error.type,
