@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2017 Mellanox Technologies, Ltd
+# Copyright(c) 2010-2014 Intel Corporation
 
-APP = flow
+# binary name
+APP = deadlock-test
 
+# all source are stored in SRCS-y
 SRCS-y := main.c
 
 # Build using pkg-config variables if possible
@@ -19,6 +21,8 @@ PKGCONF ?= pkg-config
 
 PC_FILE := $(shell $(PKGCONF) --path libdpdk 2>/dev/null)
 CFLAGS += -O3 $(shell $(PKGCONF) --cflags libdpdk)
+# Add flag to allow experimental API as l2fwd uses rte_ethdev_set_ptype API
+CFLAGS += -DALLOW_EXPERIMENTAL_API
 LDFLAGS_SHARED = $(shell $(PKGCONF) --libs libdpdk)
 LDFLAGS_STATIC = -Wl,-Bstatic $(shell $(PKGCONF) --static --libs libdpdk)
 
@@ -36,7 +40,7 @@ clean:
 	rm -f build/$(APP) build/$(APP)-static build/$(APP)-shared
 	test -d build && rmdir -p build || true
 
-else
+else # Build using legacy build system
 
 ifeq ($(RTE_SDK),)
 $(error "Please define RTE_SDK environment variable")
@@ -49,7 +53,8 @@ include $(RTE_SDK)/mk/rte.vars.mk
 
 CFLAGS += -O3
 CFLAGS += $(WERROR_FLAGS)
+# Add flag to allow experimental API as l2fwd uses rte_ethdev_set_ptype API
+CFLAGS += -DALLOW_EXPERIMENTAL_API
 
 include $(RTE_SDK)/mk/rte.extapp.mk
-
 endif
