@@ -63,21 +63,7 @@ control_main_loop(struct control_args *args)
         /*
          * Read messages from ring
          */
-
-        for (i = 0; i < qconf->n_rx_port; i++) {
-
-            portid = qconf->rx_port_list[i];
-            nb_rx = rte_eth_rx_burst(portid, 0,
-                    pkts_burst, MAX_PKT_BURST);
-
-            port_statistics[portid].rx += nb_rx;
-
-            for (j = 0; j < nb_rx; j++) {
-                m = pkts_burst[j];
-                rte_prefetch0(rte_pktmbuf_mtod(m, void *));
-                app_simple_forward(m, portid);
-            }
-        }
+        // TODO
     }
 }
 

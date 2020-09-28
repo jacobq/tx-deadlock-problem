@@ -51,148 +51,7 @@ static struct rte_eth_conf port_conf = {
 
 struct rte_mempool * app_pktmbuf_pool = NULL;
 
-/* Per-port statistics struct */
-struct app_port_statistics {
-	uint64_t tx;
-	uint64_t rx;
-	uint64_t dropped;
-} __rte_cache_aligned;
-struct app_port_statistics port_statistics[RTE_MAX_ETHPORTS];
 
-#define MAX_TIMER_PERIOD 86400 /* 1 day max */
-/* A tsc-based timer responsible for triggering statistics printout */
-static uint64_t timer_period = 10; /* default period is 10 seconds */
-
-/* Print out statistics on packets dropped */
-static void
-print_stats(void)
-{
-	uint64_t total_packets_dropped, total_packets_tx, total_packets_rx;
-	unsigned portid;
-
-	total_packets_dropped = 0;
-	total_packets_tx = 0;
-	total_packets_rx = 0;
-
-	const char clr[] = { 27, '[', '2', 'J', '\0' };
-	const char topLeft[] = { 27, '[', '1', ';', '1', 'H','\0' };
-
-		/* Clear screen and move to top left */
-	printf("%s%s", clr, topLeft);
-
-	printf("\nPort statistics ====================================");
-
-	for (portid = 0; portid < RTE_MAX_ETHPORTS; portid++) {
-		/* skip disabled ports */
-		if ((app_enabled_port_mask & (1 << portid)) == 0)
-			continue;
-		printf("\nStatistics for port %u ------------------------------"
-			   "\nPackets sent: %24"PRIu64
-			   "\nPackets received: %20"PRIu64
-			   "\nPackets dropped: %21"PRIu64,
-			   portid,
-			   port_statistics[portid].tx,
-			   port_statistics[portid].rx,
-			   port_statistics[portid].dropped);
-
-		total_packets_dropped += port_statistics[portid].dropped;
-		total_packets_tx += port_statistics[portid].tx;
-		total_packets_rx += port_statistics[portid].rx;
-	}
-	printf("\nAggregate statistics ==============================="
-		   "\nTotal packets sent: %18"PRIu64
-		   "\nTotal packets received: %14"PRIu64
-		   "\nTotal packets dropped: %15"PRIu64,
-		   total_packets_tx,
-		   total_packets_rx,
-		   total_packets_dropped);
-	printf("\n====================================================\n");
-}
-
-/* display usage */
-static void
-app_usage(const char *prgname)
-{
-	printf("%s [EAL options] -- [-q NQ]\n"
-		   "  -T PERIOD: statistics will be refreshed each PERIOD seconds (0 to disable, 10 default, 86400 maximum)\n"
-	       prgname);
-}
-
-static int
-app_parse_timer_period(const char *q_arg)
-{
-	char *end = NULL;
-	int n;
-
-	/* parse number string */
-	n = strtol(q_arg, &end, 10);
-	if ((q_arg[0] == '\0') || (end == NULL) || (*end != '\0'))
-		return -1;
-	if (n >= MAX_TIMER_PERIOD)
-		return -1;
-
-	return n;
-}
-
-static const char short_options[] =
-	"T:"  /* timer period */
-	;
-
-enum {
-	/* long options mapped to a short option */
-
-	/* first long only option value must be >= 256, so that we won't
-	 * conflict with short options */
-	CMD_LINE_OPT_MIN_NUM = 256,
-};
-
-static const struct option lgopts[] = {
-	{NULL, 0, 0, 0}
-};
-
-/* Parse the argument given in the command line of the application */
-static int
-app_parse_args(int argc, char **argv)
-{
-	int opt, ret, timer_secs;
-	char **argvopt;
-	int option_index;
-	char *prgname = argv[0];
-
-	argvopt = argv;
-
-	while ((opt = getopt_long(argc, argvopt, short_options,
-				  lgopts, &option_index)) != EOF) {
-
-		switch (opt) {
-		/* timer period */
-		case 'T':
-			timer_secs = app_parse_timer_period(optarg);
-			if (timer_secs < 0) {
-				printf("invalid timer period\n");
-				app_usage(prgname);
-				return -1;
-			}
-			timer_period = timer_secs;
-			break;
-
-		/* long options */
-		case 0:
-			break;
-
-		default:
-			app_usage(prgname);
-			return -1;
-		}
-	}
-
-	if (optind >= 0)
-		argv[optind-1] = prgname;
-
-	ret = optind-1;
-	optind = 1; /* reset getopt lib */
-	return ret;
-}
 
 /* Check the link status of all ports in up to 9s, and print them finally */
 static void
@@ -288,22 +147,12 @@ main(int argc, char **argv)
 	ret = rte_eal_init(argc, argv);
 	if (ret < 0)
 		rte_exit(EXIT_FAILURE, "Invalid EAL arguments\n");
-	argc -= ret;
-	argv += ret;
+	//argc -= ret;
+	//argv += ret;
 
 	force_quit = false;
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
-
-	/* parse application arguments (after the EAL ones) */
-	ret = app_parse_args(argc, argv);
-	if (ret < 0)
-		rte_exit(EXIT_FAILURE, "Invalid application arguments\n");
-
-	printf("MAC updating %s\n", mac_updating ? "enabled" : "disabled");
-
-	/* convert to number of cycles */
-	timer_period *= rte_get_timer_hz();
 
 	nb_ports = rte_eth_dev_count_avail();
 	if (nb_ports == 0)
