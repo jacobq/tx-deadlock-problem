@@ -346,7 +346,7 @@ main(int argc, char **argv)
     struct control_args args = {
 
     };
-	rte_eal_remote_launch(app_launch_one_lcore, NULL, CALL_MASTER)
+	rte_eal_remote_launch(app_launch_one_lcore, NULL, CALL_MASTER);
 	RTE_LCORE_FOREACH_SLAVE(lcore_id) {
 		if (rte_eal_wait_lcore(lcore_id) < 0) {
 			ret = -1;
