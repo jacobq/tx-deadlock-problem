@@ -39,6 +39,6 @@
 //#include <rte_mbuf.h>
 
 
-int app_launch_one_lcore(void *);
+int data_launch_one_lcore(void *);
 
 #endif //TX_DEADLOCK_PROBLEM_DATA_H

@@ -39,7 +39,7 @@
 #include "data.h"
 
 static void
-app_main_loop(void)
+data_main_loop(void)
 {
     struct rte_mbuf *pkts_burst[MAX_PKT_BURST];
     unsigned int lcore_id;
@@ -72,8 +72,8 @@ app_main_loop(void)
 }
 
 int
-app_launch_one_lcore(__attribute__((unused)) void *dummy)
+data_launch_one_lcore(__attribute__((unused)) void *dummy)
 {
-    app_main_loop();
+    data_main_loop();
     return 0;
 }
