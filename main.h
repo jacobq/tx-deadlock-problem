@@ -38,6 +38,8 @@
 #include <rte_mempool.h>
 #include <rte_mbuf.h>
 
-#include "message.h"
+#include "common.h"
+#include "control.h"
+#include "data.h"
 
 #endif //TX_DEADLOCK_PROBLEM_MAIN_H

@@ -1,8 +1,45 @@
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <stdint.h>
+//#include <inttypes.h>
+//#include <sys/types.h>
+//#include <sys/queue.h>
+//#include <netinet/in.h>
+//#include <setjmp.h>
+//#include <stdarg.h>
+//#include <ctype.h>
+//#include <errno.h>
+//#include <getopt.h>
+//#include <signal.h>
+#include <stdbool.h>
+
+#include <rte_common.h>
+#include <rte_log.h>
+//#include <rte_malloc.h>
+//#include <rte_memory.h>
+//#include <rte_memcpy.h>
+//#include <rte_eal.h>
+//#include <rte_launch.h>
+//#include <rte_atomic.h>
+//#include <rte_cycles.h>
+//#include <rte_prefetch.h>
+#include <rte_lcore.h>
+//#include <rte_per_lcore.h>
+//#include <rte_branch_prediction.h>
+//#include <rte_interrupts.h>
+//#include <rte_random.h>
+//#include <rte_debug.h>
+//#include <rte_ether.h>
+//#include <rte_ethdev.h>
+//#include <rte_mempool.h>
+//#include <rte_mbuf.h>
+
+#include "common.h"
 #include "control.h"
 
-#define RTE_LOGTYPE_CONTROL RTE_LOGTYPE_USER2
 
-void
+static void
 control_main_loop(struct control_args *args)
 {
     unsigned lcore_id;
@@ -24,46 +61,9 @@ control_main_loop(struct control_args *args)
 
     while (!*args->force_quit) {
         /*
-         * TX burst queue drain
+         * Read messages from ring
          */
-        diff_tsc = cur_tsc - prev_tsc;
-        if (unlikely(diff_tsc > drain_tsc)) {
 
-            for (i = 0; i < qconf->n_rx_port; i++) {
-
-                portid = l2fwd_dst_ports[qconf->rx_port_list[i]];
-                buffer = tx_buffer[portid];
-
-                sent = rte_eth_tx_buffer_flush(portid, 0, buffer);
-                if (sent)
-                    port_statistics[portid].tx += sent;
-
-            }
-
-            /* if timer is enabled */
-            if (timer_period > 0) {
-
-                /* advance the timer */
-                timer_tsc += diff_tsc;
-
-                /* if timer has reached its timeout */
-                if (unlikely(timer_tsc >= timer_period)) {
-
-                    /* do this only on master core */
-                    if (lcore_id == rte_get_master_lcore()) {
-                        print_stats();
-                        /* reset the timer */
-                        timer_tsc = 0;
-                    }
-                }
-            }
-
-            prev_tsc = cur_tsc;
-        }
-
-        /*
-         * Read packet from RX queues
-         */
         for (i = 0; i < qconf->n_rx_port; i++) {
 
             portid = qconf->rx_port_list[i];
@@ -75,7 +75,7 @@ control_main_loop(struct control_args *args)
             for (j = 0; j < nb_rx; j++) {
                 m = pkts_burst[j];
                 rte_prefetch0(rte_pktmbuf_mtod(m, void *));
-                l2fwd_simple_forward(m, portid);
+                app_simple_forward(m, portid);
             }
         }
     }
