@@ -306,25 +306,14 @@ main(int argc, char **argv)
 					portid);
 
 		rte_eth_tx_buffer_init(tx_buffer[portid], MAX_PKT_BURST);
-
-		ret = rte_eth_tx_buffer_set_err_callback(tx_buffer[portid],
-				rte_eth_tx_buffer_count_callback,
-				&port_statistics[portid].dropped);
+		ret = rte_eth_dev_set_ptypes(portid, RTE_PTYPE_UNKNOWN, NULL, 0);
 		if (ret < 0)
-			rte_exit(EXIT_FAILURE,
-			"Cannot set error callback for tx buffer on port %u\n",
-				 portid);
+			printf("Port %u, Failed to disable Ptype parsing\n", portid);
 
-		ret = rte_eth_dev_set_ptypes(portid, RTE_PTYPE_UNKNOWN, NULL,
-					     0);
-		if (ret < 0)
-			printf("Port %u, Failed to disable Ptype parsing\n",
-					portid);
 		/* Start device */
 		ret = rte_eth_dev_start(portid);
 		if (ret < 0)
-			rte_exit(EXIT_FAILURE, "rte_eth_dev_start:err=%d, port=%u\n",
-				  ret, portid);
+			rte_exit(EXIT_FAILURE, "rte_eth_dev_start:err=%d, port=%u\n", ret, portid);
 
 		printf("done: \n");
 
@@ -342,9 +331,6 @@ main(int argc, char **argv)
 				app_ports_eth_addr[portid].addr_bytes[3],
 				app_ports_eth_addr[portid].addr_bytes[4],
 				app_ports_eth_addr[portid].addr_bytes[5]);
-
-		/* initialize port stats */
-		memset(&port_statistics, 0, sizeof(port_statistics));
 	}
 
 	if (!nb_ports_available) {
